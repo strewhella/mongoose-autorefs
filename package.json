@@ -1,0 +1,29 @@
+{
+  "name": "mongoose-autorefs",
+  "version": "1.0.0",
+  "description": "Automatic updating of document references in mongoose",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mongoose",
+    "ref",
+    "auto",
+    "update",
+    "automatic",
+    "doc",
+    "reference",
+    "post",
+    "save"
+  ],
+  "author": "Simon Trewhella",
+  "license": "MIT",
+  "dependencies": {
+    "mongoose": "^3.8.20",
+    "mongoose-populator": "^1.0.2"
+  },
+  "devDependencies": {
+    "should": "^4.3.1"
+  }
+}
