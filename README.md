@@ -20,6 +20,7 @@ companySchema.plugin(autoref, [
     'employees.employer',
     'interviewees.interviewers'
 ]);
+var Company = mongoose.model('Company', companySchema);
 
 var personSchema = new mongoose.Schema({
     _id: ObjectId,
@@ -35,8 +36,10 @@ personSchema.plugin(autoref, [
     'employer.employees',
     'interviewers.interviewees'
 ]);
+var Person = mongoose.model('Person', personSchema);
 ```
 
+mongoose-autorefs uses another npm package [mongoose-populator](https://www.npmjs.com/package/mongoose-populator) to fully populate documents in the autoref hierarchy.
 
 **The `options` array**
 
@@ -44,7 +47,7 @@ This array defines one or more paths to referenced documents to update on a `sav
 
 In the above example, when saving a `Company` document with an `employee`, autoref will automatically update the referenced `Person` document, setting it's `employer` field to the `_id` of the saved `Company`.
 
-This will also work for arrays and arbitraryily nested documents.
+This will also work for arrays and arbitrarily nested documents.
 
 
 **IMPORTANT NOTES**
