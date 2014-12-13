@@ -1,10 +1,12 @@
 {
   "name": "mongoose-autorefs",
   "version": "1.0.0",
-  "description": "Automatic updating of document references in mongoose",
+  "description": "Mongoose plugin for automatic updating of referenced documents",
+  "repository": "https://github.com/strewhella/mongoose-autorefs.git",
+  "bugs": "https://github.com/strewhella/mongoose-autorefs/issues",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha -R spec ./test/test.js"
   },
   "keywords": [
     "mongoose",
