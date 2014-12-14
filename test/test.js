@@ -5,6 +5,8 @@
 var testdb = require('./testdb');
 var should = require('should');
 var autoref = require('../index');
+var mongoose = require('mongoose');
+var ObjectId = mongoose.Schema.ObjectId;
 
 describe('1-1 self referencing relationship', function(){
     var mike, lisa, error;
@@ -15,7 +17,7 @@ describe('1-1 self referencing relationship', function(){
                     m.partner = l._id;
                     m.save(function(err, m) {
                         error = err;
-                        db.Person.on(autoref.completeEvent(m._id), function() {
+                        m.on('autoref', function(err, object) {
                             db.Person.findOne({name: 'Mike'}, function (err, m) {
                                 mike = m;
                                 db.Person.findOne({name: 'Lisa'}, function (err, l) {
@@ -54,7 +56,7 @@ describe('many-many self referencing relationship', function() {
                         m.friends = [l._id, g._id];
                         m.save(function (err, m) {
                             error = err;
-                            db.Person.on(autoref.completeEvent(m._id), function() {
+                            m.on('autoref', function() {
                                 db.Person.findOne({name: 'Mike'}, function (err, m) {
                                     mike = m;
                                     db.Person.findOne({name: 'Lisa'}, function (err, l) {
@@ -106,7 +108,7 @@ describe('1-many relationship', function() {
                     m.employer = s._id;
                     m.save(function (err, m) {
                         error = err;
-                        db.Person.on(autoref.completeEvent(m._id), function() {
+                        m.on('autoref', function() {
                             db.Person.findOne({name: 'Mike'}, function (err, m) {
                                 mike = m;
                                 db.Company.findById(s._id, function (err, s) {
@@ -147,7 +149,7 @@ describe('many-1 relationship', function() {
                     s.employees = [m._id];
                     s.save(function (err, s) {
                         error = err;
-                        db.Company.on(autoref.completeEvent(s._id), function() {
+                        s.on('autoref', function() {
                             db.Company.findOne({name: 'Sweet'}, function (err, s) {
                                 sweet = s;
                                 db.Person.findOne({name: 'Mike'}, function (err, m) {
@@ -189,7 +191,7 @@ describe('many-many relationship company to person', function() {
                         s.interviewees = [m._id, l._id];
                         s.save(function(err, s) {
                             error = err;
-                            db.Company.on(autoref.completeEvent(s._id), function() {
+                            s.on('autoref', function() {
                                 db.Company.findOne({name: 'Sweet'}, function (err, s) {
                                     sweet = s;
                                     db.Person.findOne({name: 'Mike'}, function (err, m) {
@@ -240,9 +242,9 @@ describe('many-many relationship person to company', function() {
                 db.Company.findOne({ name: 'Schmick' }, function(err, sch) {
                     db.Person.findOne({name: 'Mike'}, function (err, m) {
                         m.interviewers = [s._id, sch._id];
-                        m.save(function(err, m){
+                        m.save(function(err, ma){
                             error = err;
-                            db.Person.on(autoref.completeEvent(m._id), function() {
+                            ma.on('autoref', function() {
                                 db.Person.findOne({name: 'Mike'}, function (err, m) {
                                     mike = m;
                                     db.Company.findOne({name: 'Sweet'}, function (err, s) {
@@ -282,5 +284,68 @@ describe('many-many relationship person to company', function() {
         should.exist(schmick);
         schmick.interviewees.length.should.eql(1);
         schmick.interviewees.indexOf(mike._id).should.not.eql(-1);
+    });
+});
+
+// TODO Validate bad paths against schemas so that we can generate errors
+describe('bad input', function() {
+    var db;
+    beforeEach(function (done) {
+        testdb.init(function (initDb) {
+            db = initDb;
+            done();
+        });
+
+    });
+
+
+    it('should ignore bad nested paths', function (done) {
+        var badSchema = new mongoose.Schema({
+            _id: ObjectId,
+            person: {type: ObjectId, ref: 'Person'}
+        });
+        badSchema.plugin(autoref, [
+            'person.nope'
+        ]);
+        var Bad = mongoose.model('BadNestedPath', badSchema);
+        db.Person.findOne({name: 'Mike'}, function (err, mike) {
+            var bad = new Bad({
+                _id: mongoose.Types.ObjectId(),
+                person: mike._id
+            });
+
+            bad.save(function(){
+                bad.on('autoref', function(err, bad){
+                    should.not.exist(err);
+                    should.exist(bad);
+                    done();
+                });
+            });
+        });
+    });
+
+    it('should ignore bad paths', function (done) {
+        var badSchema = new mongoose.Schema({
+            _id: ObjectId,
+            person: {type: ObjectId, ref: 'Person'}
+        });
+        badSchema.plugin(autoref, [
+            'hmm.not.there'
+        ]);
+        var Bad = mongoose.model('BadPath', badSchema);
+        db.Person.findOne({name: 'Mike'}, function (err, mike) {
+            var bad = new Bad({
+                _id: mongoose.Types.ObjectId(),
+                person: mike._id
+            });
+
+            bad.save(function(){
+                bad.on('autoref', function(err, bad){
+                    should.not.exist(err);
+                    should.exist(bad);
+                    done();
+                });
+            });
+        });
     });
 });

@@ -8,12 +8,20 @@ module.exports = function (schema, options){
     if (!Array.isArray(options)) return console.error('Non-array found in autoref options for schema ' + schema.name);
     if (options.length === 0) return console.error('No autoref options provided for schema ' + schema.name);
 
-    options.forEach(function(autoref){
-        schema.post('save', function(){
-            var refId = this._id;
-            var saveModel = this.constructor;
+    schema.post('save', function(){
+        var refId = this._id;
+        var originalDoc = this;
+        var saves = options.length;
 
-            populate(this, autoref, function(err, doc){
+        function finish(err, doc){
+            --saves;
+            if (saves === 0) {
+                return originalDoc.emit('autoref', err, doc);
+            }
+        }
+
+        options.forEach(function(autoref){
+            populate(originalDoc, autoref, function(err, doc){
                 var paths = autoref.split('.');
                 var docs = [doc];
 
@@ -22,7 +30,7 @@ module.exports = function (schema, options){
                         doc = docs.shift();
 
                         doc = doc[paths[i]];
-                        if (!doc || Array.isArray(doc) && doc.length === 0) return;
+                        if (!doc || Array.isArray(doc) && doc.length === 0) continue;
 
                         if (Array.isArray(doc)){
                             doc.forEach(function(arrayDoc){
@@ -35,12 +43,24 @@ module.exports = function (schema, options){
                     }
                 }
 
+                if (docs.length === 0){
+                    return finish(null, originalDoc);
+                }
+
                 var dest = paths[paths.length - 1];
+                if (!dest){
+                    return finish(new Error('Null or empty path found in autoref'), originalDoc);
+                }
+
                 var updates = docs.length;
 
                 docs.forEach(function(doc){
-                    if (!doc) return;
-                    if (doc[dest] === refId || Array.isArray(doc[dest]) && doc[dest].indexOf(refId) !== -1) return;
+                    if (doc[dest] === refId || Array.isArray(doc[dest]) && doc[dest].indexOf(refId) !== -1){
+                        --updates;
+                        if (updates === 0) {
+                            return finish(null, originalDoc);
+                        }
+                    }
 
                     var operation = Array.isArray(doc[dest]) ? '$push' : '$set';
 
@@ -50,22 +70,16 @@ module.exports = function (schema, options){
 
                     doc.constructor.findOneAndUpdate({ _id: doc._id }, update, function(err, savedDoc){
                         if (err){
-                            console.error('Error saving autoref: ' + err.message + ' (doc ' + doc._id + ')' + update );
+                            return finish(new Error('Error saving autoref: ' + err.message + ' (doc ' + doc._id + ')' + update), originalDoc);
                         }
 
                         --updates;
                         if (updates === 0) {
-                            saveModel.emit(completeEvent(refId), savedDoc);
+                            return finish(null, savedDoc);
                         }
                     });
                 });
-            })
+            });
         });
     });
 };
-
-function completeEvent(id){
-    return id + '-autoref-complete';
-}
-module.exports.completeEvent = completeEvent;
-
