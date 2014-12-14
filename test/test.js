@@ -17,7 +17,7 @@ describe('1-1 self referencing relationship', function(){
                     m.partner = l._id;
                     m.save(function(err, m) {
                         error = err;
-                        m.on('autoref', function(err, object) {
+                        m.on('autoref', function() {
                             db.Person.findOne({name: 'Mike'}, function (err, m) {
                                 mike = m;
                                 db.Person.findOne({name: 'Lisa'}, function (err, l) {
@@ -344,6 +344,99 @@ describe('bad input', function() {
                     should.not.exist(err);
                     should.exist(bad);
                     done();
+                });
+            });
+        });
+    });
+});
+
+describe('when populating deeply nested objects', function() {
+    var One, Two, Three, Four;
+    before(function (done) {
+        var oneSchema = new mongoose.Schema({
+            data: String,
+            two: {type: mongoose.Schema.ObjectId, ref: 'Two'}
+        }, { _id: true });
+        oneSchema.plugin(autoref, ['two.threes.four.one']);
+
+        var twoSchema = new mongoose.Schema({
+            data: String,
+            threes: [{type: mongoose.Schema.ObjectId, ref: 'Three'}]
+        }, { _id: true });
+
+        var threeSchema = new mongoose.Schema({
+            data: String,
+            four: {type: mongoose.Schema.ObjectId, ref: 'Four'}
+        }, { _id: true });
+
+        var fourSchema = new mongoose.Schema({
+            data: String,
+            one: [{type: mongoose.Schema.ObjectId, ref: 'One'}]
+        }, { _id: true });
+
+        One = mongoose.model('One', oneSchema);
+        Two = mongoose.model('Two', twoSchema);
+        Three = mongoose.model('Three', threeSchema);
+        Four = mongoose.model('Four', fourSchema);
+
+        One.collection.drop(function(){
+            Two.collection.drop(function(){
+                Three.collection.drop(function(){
+                    Four.collection.drop(function(){
+                        populateData();
+                    });
+                });
+            });
+        });
+
+        function populateData() {
+            var oneOne = new One({data: 'one-one'});
+            var oneTwo = new One({data: 'one-two'});
+            var twoOne = new Two({data: 'two-one'});
+            var twoTwo = new Two({data: 'two-two'});
+            var threeOne = new Three({data: 'three-one'});
+            var threeTwo = new Three({data: 'three-two'});
+            var fourOne = new Four({data: 'four-one'});
+            var fourTwo = new Four({data: 'four-two'});
+
+            oneOne.two = twoOne._id;
+            oneTwo.two = twoTwo._id;
+            twoOne.threes = [threeOne._id];
+            twoTwo.threes = [threeTwo._id];
+            threeOne.four = fourOne._id;
+            threeTwo.four = fourTwo._id;
+
+            oneOne.save(function () {
+                twoOne.save(function () {
+                    oneTwo.save(function () {
+                        twoTwo.save(function () {
+                            threeOne.save(function () {
+                                threeTwo.save(function () {
+                                    fourOne.save(function () {
+                                        fourTwo.save(function () {
+                                            done();
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        }
+    });
+
+    it('should auto update deeply nested refs', function(done){
+        One.findOne({data:'one-one'}, function(err, oneOne){
+            Two.findOne({data:'two-two'}, function(err, twoTwo){
+                oneOne.two = twoTwo._id;
+                oneOne.save(function(err, oneOne){
+                    oneOne.on('autoref', function(err, oneOne){
+                        oneOne.two.data.should.eql('two-two');
+                        oneOne.two.threes[0].data.should.eql('three-two');
+                        oneOne.two.threes[0].four.data.should.eql('four-two');
+                        done();
+                    });
                 });
             });
         });

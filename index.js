@@ -13,10 +13,10 @@ module.exports = function (schema, options){
         var originalDoc = this;
         var saves = options.length;
 
-        function finish(err, doc){
+        function finish(err){
             --saves;
             if (saves === 0) {
-                return originalDoc.emit('autoref', err, doc);
+                return originalDoc.emit('autoref', err, originalDoc);
             }
         }
 
@@ -44,12 +44,12 @@ module.exports = function (schema, options){
                 }
 
                 if (docs.length === 0){
-                    return finish(null, originalDoc);
+                    return finish(null);
                 }
 
                 var dest = paths[paths.length - 1];
                 if (!dest){
-                    return finish(new Error('Null or empty path found in autoref'), originalDoc);
+                    return finish(new Error('Null or empty path found in autoref'));
                 }
 
                 var updates = docs.length;
@@ -58,7 +58,7 @@ module.exports = function (schema, options){
                     if (doc[dest] === refId || Array.isArray(doc[dest]) && doc[dest].indexOf(refId) !== -1){
                         --updates;
                         if (updates === 0) {
-                            return finish(null, originalDoc);
+                            return finish(null);
                         }
                     }
 
@@ -68,14 +68,14 @@ module.exports = function (schema, options){
                     update[operation] = {};
                     update[operation][dest] = refId;
 
-                    doc.constructor.findOneAndUpdate({ _id: doc._id }, update, function(err, savedDoc){
+                    doc.constructor.findOneAndUpdate({ _id: doc._id }, update, function(err){
                         if (err){
                             return finish(new Error('Error saving autoref: ' + err.message + ' (doc ' + doc._id + ')' + update), originalDoc);
                         }
 
                         --updates;
                         if (updates === 0) {
-                            return finish(null, savedDoc);
+                            return finish(null);
                         }
                     });
                 });
