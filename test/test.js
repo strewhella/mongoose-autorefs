@@ -287,6 +287,57 @@ describe('many-many relationship person to company', function() {
     });
 });
 
+describe('1-many relationship no duplicates on multiple save', function() {
+    var mike, error, sweet;
+    before(function (done) {
+        testdb.init(function (db) {
+            db.Person.findOne({ name: 'Mike' }, function (err, m) {
+                db.Company.findOne({ name: 'Sweet' }, function(err, s){
+                    m.employer = s._id;
+                    m.save(function (err, m) {
+                        error = err;
+                        m.on('autoref', function() {
+                            // Do not subscribe to autoref more than one on the same instance
+                            m.removeAllListeners('autoref');
+                            process.nextTick(function() {
+                                m.name = 'Mike2';
+                                m.save(function (err, m) {
+                                    error = err;
+                                    m.on('autoref', function() {
+                                        db.Person.findOne({name: 'Mike2'}, function (err, m) {
+                                            mike = m;
+                                            db.Company.findById(s._id, function (err, s) {
+                                                sweet = s;
+                                                done();
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    it('should not have errored', function(){
+        should.not.exist(error);
+    });
+
+    it('should have saved main doc with new refs', function(){
+        should.exist(mike.employer);
+        mike.employer.should.eql(sweet._id);
+    });
+
+    it('should have saved autoref but no duplicates', function(){
+        should.exist(sweet);
+        should.exist(sweet.employees);
+        sweet.employees.length.should.eql(1);
+        sweet.employees.indexOf(mike._id).should.not.eql(-1);
+    });
+});
+
 // TODO Validate bad paths against schemas so that we can generate errors
 describe('bad input', function() {
     var db;
