@@ -55,28 +55,34 @@ module.exports = function (schema, options){
                 var updates = docs.length;
 
                 docs.forEach(function(doc){
-                    if (doc[dest] === refId || Array.isArray(doc[dest]) && doc[dest].indexOf(refId) !== -1){
-                        --updates;
-                        if (updates === 0) {
-                            return finish(null);
-                        }
-                    }
-
-                    var operation = Array.isArray(doc[dest]) ? '$push' : '$set';
-
-                    var update = {};
-                    update[operation] = {};
-                    update[operation][dest] = refId;
-
-                    doc.constructor.findOneAndUpdate({ _id: doc._id }, update, function(err){
+                    doc.constructor.findOne({ _id: doc._id }, function(err, doc){
                         if (err){
-                            return finish(new Error('Error saving autoref: ' + err.message + ' (doc ' + doc._id + ')' + update), originalDoc);
+                            return finish(new Error('Error saving autoref: ' + err.message + ' (doc ' + doc._id + ')'), originalDoc);
                         }
 
-                        --updates;
-                        if (updates === 0) {
-                            return finish(null);
+                        if (doc[dest] === refId || Array.isArray(doc[dest]) && doc[dest].indexOf(refId) !== -1){
+                            --updates;
+                            if (updates === 0) {
+                                return finish(null);
+                            }
+                            return;
                         }
+
+                        var operation = Array.isArray(doc[dest]) ? '$push' : '$set';
+                        var update = {};
+                        update[operation] = {};
+                        update[operation][dest] = refId;
+
+                        doc.constructor.update({ _id: doc._id }, update, function(err){
+                            if (err){
+                                return finish(new Error('Error saving autoref: ' + err.message + ' (doc ' + doc._id + ')' + update), originalDoc);
+                            }
+
+                            --updates;
+                            if (updates === 0) {
+                                return finish(null);
+                            }
+                        });
                     });
                 });
             });
