@@ -1,4 +1,4 @@
-mongoose-autorefs
+mongoose-autorefs [![Build Status](https://travis-ci.org/strewhella/mongoose-autorefs.svg?branch=master)](https://travis-ci.org/strewhella/mongoose-autorefs)
 =================
 Mongoose plugin for automatic updating of referenced documents
 
