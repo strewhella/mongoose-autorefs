@@ -1,6 +1,6 @@
 {
   "name": "mongoose-autorefs",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Mongoose plugin for automatic updating of referenced documents",
   "repository": "https://github.com/strewhella/mongoose-autorefs.git",
   "bugs": "https://github.com/strewhella/mongoose-autorefs/issues",
