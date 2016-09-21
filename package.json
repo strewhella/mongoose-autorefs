@@ -22,7 +22,7 @@
   "author": "Simon Trewhella",
   "license": "MIT",
   "dependencies": {
-    "mongoose": "^3.8.20",
+    "mongoose": "^4.6.0",
     "mongoose-populator": "^1.0.2"
   },
   "devDependencies": {
