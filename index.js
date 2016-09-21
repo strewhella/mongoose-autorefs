@@ -14,8 +14,7 @@ module.exports = function (schema, options){
           return next();
         }
 
-        autorefs(doc._id, doc, function(finishedDoc, err){
-            finishedDoc.emit('autoref', err, finishedDoc);
+        autorefs(doc._id, doc, function(err){
             if (err) {
               return next(err);
             }
@@ -29,8 +28,7 @@ module.exports = function (schema, options){
           return next();
         }
 
-        autorefs(doc._id, doc, function(finishedDoc, err){
-            finishedDoc.emit('autoref', err, finishedDoc);
+        autorefs(doc._id, doc, function(err){
             if (err) {
               return next(err);
             }
@@ -44,8 +42,7 @@ module.exports = function (schema, options){
           return next();
         }
 
-        autorefs(doc._id, doc, function(finishedDoc, err){
-            finishedDoc.emit('autoref', err, finishedDoc);
+        autorefs(doc._id, doc, function(err){
             if (err) {
               return next(err);
             }
@@ -59,7 +56,7 @@ module.exports = function (schema, options){
         function finish(err){
             --saves;
             if (saves === 0) {
-                return callback(originalDoc, err);
+                return callback(err);
             }
         }
 

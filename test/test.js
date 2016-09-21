@@ -17,13 +17,11 @@ describe('1-1 self referencing relationship', function(){
                     m.partner = l._id;
                     m.save(function(err, m) {
                         error = err;
-                        m.on('autoref', function() {
-                            db.Person.findOne({name: 'Mike'}, function (err, m) {
-                                mike = m;
-                                db.Person.findOne({name: 'Lisa'}, function (err, l) {
-                                    lisa = l;
-                                    done();
-                                });
+                        db.Person.findOne({name: 'Mike'}, function (err, m) {
+                            mike = m;
+                            db.Person.findOne({name: 'Lisa'}, function (err, l) {
+                                lisa = l;
+                                done();
                             });
                         });
                     });
@@ -56,15 +54,13 @@ describe('many-many self referencing relationship', function() {
                         m.friends = [l._id, g._id];
                         m.save(function (err, m) {
                             error = err;
-                            m.on('autoref', function() {
-                                db.Person.findOne({name: 'Mike'}, function (err, m) {
-                                    mike = m;
-                                    db.Person.findOne({name: 'Lisa'}, function (err, l) {
-                                        lisa = l;
-                                        db.Person.findOne({name: 'Greg'}, function (err, g) {
-                                            greg = g;
-                                            done();
-                                        });
+                            db.Person.findOne({name: 'Mike'}, function (err, m) {
+                                mike = m;
+                                db.Person.findOne({name: 'Lisa'}, function (err, l) {
+                                    lisa = l;
+                                    db.Person.findOne({name: 'Greg'}, function (err, g) {
+                                        greg = g;
+                                        done();
                                     });
                                 });
                             });
@@ -108,13 +104,11 @@ describe('1-many relationship', function() {
                     m.employer = s._id;
                     m.save(function (err, m) {
                         error = err;
-                        m.on('autoref', function() {
-                            db.Person.findOne({name: 'Mike'}, function (err, m) {
-                                mike = m;
-                                db.Company.findById(s._id, function (err, s) {
-                                    sweet = s;
-                                    done();
-                                });
+                        db.Person.findOne({name: 'Mike'}, function (err, m) {
+                            mike = m;
+                            db.Company.findById(s._id, function (err, s) {
+                                sweet = s;
+                                done();
                             });
                         });
                     });
@@ -149,13 +143,11 @@ describe('many-1 relationship', function() {
                     s.employees = [m._id];
                     s.save(function (err, s) {
                         error = err;
-                        s.on('autoref', function() {
-                            db.Company.findOne({name: 'Sweet'}, function (err, s) {
-                                sweet = s;
-                                db.Person.findOne({name: 'Mike'}, function (err, m) {
-                                    mike = m;
-                                    done();
-                                });
+                        db.Company.findOne({name: 'Sweet'}, function (err, s) {
+                            sweet = s;
+                            db.Person.findOne({name: 'Mike'}, function (err, m) {
+                                mike = m;
+                                done();
                             });
                         });
                     });
@@ -191,16 +183,14 @@ describe('many-many relationship company to person', function() {
                         s.interviewees = [m._id, l._id];
                         s.save(function(err, s) {
                             error = err;
-                            s.on('autoref', function() {
-                                db.Company.findOne({name: 'Sweet'}, function (err, s) {
-                                    sweet = s;
-                                    db.Person.findOne({name: 'Mike'}, function (err, m) {
-                                        mike = m;
-                                        db.Person.findOne({name: 'Lisa'}, function (err, l) {
-                                            lisa = l;
-                                            done();
-                                        })
-                                    });
+                            db.Company.findOne({name: 'Sweet'}, function (err, s) {
+                                sweet = s;
+                                db.Person.findOne({name: 'Mike'}, function (err, m) {
+                                    mike = m;
+                                    db.Person.findOne({name: 'Lisa'}, function (err, l) {
+                                        lisa = l;
+                                        done();
+                                    })
                                 });
                             });
                         });
@@ -244,15 +234,13 @@ describe('many-many relationship person to company', function() {
                         m.interviewers = [s._id, sch._id];
                         m.save(function(err, ma){
                             error = err;
-                            ma.on('autoref', function() {
-                                db.Person.findOne({name: 'Mike'}, function (err, m) {
-                                    mike = m;
-                                    db.Company.findOne({name: 'Sweet'}, function (err, s) {
-                                        db.Company.findOne({name: 'Schmick'}, function (err, sch) {
-                                            sweet = s;
-                                            schmick = sch;
-                                            done();
-                                        });
+                            db.Person.findOne({name: 'Mike'}, function (err, m) {
+                                mike = m;
+                                db.Company.findOne({name: 'Sweet'}, function (err, s) {
+                                    db.Company.findOne({name: 'Schmick'}, function (err, sch) {
+                                        sweet = s;
+                                        schmick = sch;
+                                        done();
                                     });
                                 });
                             });
@@ -296,21 +284,15 @@ describe('1-many relationship no duplicates on multiple save', function() {
                     m.employer = s._id;
                     m.save(function (err, m) {
                         error = err;
-                        m.on('autoref', function() {
-                            // Do not subscribe to autoref more than one on the same instance
-                            m.removeAllListeners('autoref');
-                            process.nextTick(function() {
-                                m.name = 'Mike2';
-                                m.save(function (err, m) {
-                                    error = err;
-                                    m.on('autoref', function() {
-                                        db.Person.findOne({name: 'Mike2'}, function (err, m) {
-                                            mike = m;
-                                            db.Company.findById(s._id, function (err, s) {
-                                                sweet = s;
-                                                done();
-                                            });
-                                        });
+                        process.nextTick(function() {
+                            m.name = 'Mike2';
+                            m.save(function (err, m) {
+                                error = err;
+                                db.Person.findOne({name: 'Mike2'}, function (err, m) {
+                                    mike = m;
+                                    db.Company.findById(s._id, function (err, s) {
+                                        sweet = s;
+                                        done();
                                     });
                                 });
                             });
@@ -365,12 +347,10 @@ describe('bad input', function() {
                 person: mike._id
             });
 
-            bad.save(function(){
-                bad.on('autoref', function(err, bad){
-                    should.not.exist(err);
-                    should.exist(bad);
-                    done();
-                });
+            bad.save(function(err, bad){
+                should.not.exist(err);
+                should.exist(bad);
+                done();
             });
         });
     });
@@ -390,12 +370,10 @@ describe('bad input', function() {
                 person: mike._id
             });
 
-            bad.save(function(){
-                bad.on('autoref', function(err, bad){
-                    should.not.exist(err);
-                    should.exist(bad);
-                    done();
-                });
+            bad.save(function(err, bad){
+                should.not.exist(err);
+                should.exist(bad);
+                done();
             });
         });
     });
@@ -482,12 +460,10 @@ describe('when populating deeply nested objects', function() {
             Two.findOne({data:'two-two'}, function(err, twoTwo){
                 oneOne.two = twoTwo._id;
                 oneOne.save(function(err, oneOne){
-                    oneOne.on('autoref', function(err, oneOne){
-                        oneOne.two.data.should.eql('two-two');
-                        oneOne.two.threes[0].data.should.eql('three-two');
-                        oneOne.two.threes[0].four.data.should.eql('four-two');
-                        done();
-                    });
+                    oneOne.two.data.should.eql('two-two');
+                    oneOne.two.threes[0].data.should.eql('three-two');
+                    oneOne.two.threes[0].four.data.should.eql('four-two');
+                    done();
                 });
             });
         });
