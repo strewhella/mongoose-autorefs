@@ -8,15 +8,58 @@ module.exports = function (schema, options){
     if (!Array.isArray(options)) return console.error('Non-array found in autoref options for schema ' + schema.name);
     if (options.length === 0) return console.error('No autoref options provided for schema ' + schema.name);
 
-    schema.post('save', function(){
-        var refId = this._id;
-        var originalDoc = this;
+    schema.post('save', function(doc, next){
+        // making sure the doc is a valid mongoose doc, with the function we need
+        if (!doc.populate) {
+          return next();
+        }
+
+        autorefs(doc._id, doc, function(finishedDoc, err){
+            finishedDoc.emit('autoref', err, finishedDoc);
+            if (err) {
+              return next(err);
+            }
+            return next();
+        });
+    });
+
+    schema.post('findOneAndUpdate', function(doc, next){
+        // making sure the doc is a valid mongoose doc, with the function we need
+        if (!doc.populate) {
+          return next();
+        }
+
+        autorefs(doc._id, doc, function(finishedDoc, err){
+            finishedDoc.emit('autoref', err, finishedDoc);
+            if (err) {
+              return next(err);
+            }
+            return next();
+        });
+    });
+
+    schema.post('update', function(doc, next){
+        // making sure the doc is a valid mongoose doc, with the function we need
+        if (!doc.populate) {
+          return next();
+        }
+
+        autorefs(doc._id, doc, function(finishedDoc, err){
+            finishedDoc.emit('autoref', err, finishedDoc);
+            if (err) {
+              return next(err);
+            }
+            return next();
+        });
+    });
+
+    function autorefs(refId, originalDoc, callback){
         var saves = options.length;
 
         function finish(err){
             --saves;
             if (saves === 0) {
-                return originalDoc.emit('autoref', err, originalDoc);
+                return callback(originalDoc, err);
             }
         }
 
@@ -87,5 +130,5 @@ module.exports = function (schema, options){
                 });
             });
         });
-    });
+    };
 };
