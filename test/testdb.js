@@ -1,8 +1,10 @@
+
 /**
  * Created by Simon on 5/12/2014.
  */
 
 var mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 var autoref = require('../index.js');
 
 var ObjectId = mongoose.Schema.ObjectId;
@@ -11,8 +13,8 @@ var initialized = false;
 module.exports.init = function(done) {
     if (!initialized) {
         initialized = true;
-        mongoose.connect('mongodb://localhost/test');
-        //mongoose.set('debug', true);
+        mongoose.connect('mongodb://localhost/test', {useMongoClient:true});
+    //    mongoose.set('debug', true);
 
         var companySchema = new mongoose.Schema({
             _id: ObjectId,
@@ -59,33 +61,29 @@ module.exports.init = function(done) {
         var mike = new Person({_id: mongoose.Types.ObjectId(), name: 'Mike'});
         var lisa = new Person({_id: mongoose.Types.ObjectId(), name: 'Lisa'});
 
+        lisa.on('autoref', function(err, lisa) {
+            createCompanies(greg, mike, lisa);
+        });
+
         greg.save(function (err, greg) {
-            greg.on('autoref', function(err, greg) {
-                mike.save(function (err, mike) {
-                    mike.on('autoref', function(err, mike){
-                        lisa.save(function (err, lisa) {
-                            lisa.on('autoref', function(err, lisa) {
-                                createCompanies(greg, mike, lisa);
-                            });
-                        });
-                    });
+            mike.save(function (err, mike) {
+                lisa.save(function (err, lisa) {
                 });
             });
         });
+
+
 
         function createCompanies() {
             var sweet = new Company({_id:mongoose.Types.ObjectId(), name: 'Sweet' });
             var schmick = new Company({_id:mongoose.Types.ObjectId(), name: 'Schmick'});
 
+            schmick.on('autoref', function(err, schmick) {
+                done(db);
+            });
 
             sweet.save(function(){
-                sweet.on('autoref', function(err, sweet) {
-                    schmick.save(function () {
-                        schmick.on('autoref', function(err, schmick) {
-                            done(db);
-                        });
-                    });
-                });
+                schmick.save(function () {}); 
             })
         }
     }
