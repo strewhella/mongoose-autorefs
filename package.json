@@ -6,7 +6,7 @@
   "bugs": "https://github.com/strewhella/mongoose-autorefs/issues",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -R spec ./test/test.js"
+    "test": "mocha --exit -R spec ./test/test.js"
   },
   "keywords": [
     "mongoose",
@@ -22,10 +22,11 @@
   "author": "Simon Trewhella",
   "license": "MIT",
   "dependencies": {
-    "mongoose": "^3.8.20",
-    "mongoose-populator": "^1.0.2"
+    "mongoose": "^4.11.2",
+    "mongoose-populator": "^1.0.4"
   },
   "devDependencies": {
-    "should": "^4.3.1"
+    "should": "^4.3.1",
+    "mocha": "^5.0.0"
   }
 }

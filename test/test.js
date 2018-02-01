@@ -390,12 +390,14 @@ describe('bad input', function() {
                 person: mike._id
             });
 
+            bad.on('autoref', function(err, bad){
+                should.not.exist(err);
+                should.exist(bad);
+                done();
+            });
+
             bad.save(function(){
-                bad.on('autoref', function(err, bad){
-                    should.not.exist(err);
-                    should.exist(bad);
-                    done();
-                });
+              
             });
         });
     });
