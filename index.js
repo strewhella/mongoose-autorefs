@@ -2,6 +2,7 @@
  * Created by Simon on 10/12/2014.
  */
 
+var mongoose = require('mongoose');
 var populate = require('mongoose-populator');
 
 module.exports = function (schema, options){
@@ -25,7 +26,17 @@ module.exports = function (schema, options){
     schema.post('findOneAndUpdate', function(doc, next){
         // making sure the doc is a valid mongoose doc, with the function we need
         if (!doc.populate) {
-          return next();
+            if (this.schema && this.model && this.model.modelName) {
+                var model = mongoose.model(this.model.modelName, this.schema);
+                doc = new model(doc);
+
+                if (!doc.populate) {
+                    return next();
+                }
+            }
+            else {
+                return next();
+            }
         }
 
         autorefs(doc._id, doc, function(err){
@@ -39,7 +50,17 @@ module.exports = function (schema, options){
     schema.post('update', function(doc, next){
         // making sure the doc is a valid mongoose doc, with the function we need
         if (!doc.populate) {
-          return next();
+            if (this.schema && this.model && this.model.modelName) {
+                var model = mongoose.model(this.model.modelName, this.schema);
+                doc = new model(doc);
+
+                if (!doc.populate) {
+                    return next();
+                }
+            }
+            else {
+                return next();
+            }
         }
 
         autorefs(doc._id, doc, function(err){
