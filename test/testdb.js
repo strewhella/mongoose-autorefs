@@ -60,15 +60,9 @@ module.exports.init = function(done) {
         var lisa = new Person({_id: mongoose.Types.ObjectId(), name: 'Lisa'});
 
         greg.save(function (err, greg) {
-            greg.on('autoref', function(err, greg) {
-                mike.save(function (err, mike) {
-                    mike.on('autoref', function(err, mike){
-                        lisa.save(function (err, lisa) {
-                            lisa.on('autoref', function(err, lisa) {
-                                createCompanies(greg, mike, lisa);
-                            });
-                        });
-                    });
+            mike.save(function (err, mike) {
+                lisa.save(function (err, lisa) {
+                    createCompanies(greg, mike, lisa);
                 });
             });
         });
@@ -78,13 +72,9 @@ module.exports.init = function(done) {
             var schmick = new Company({_id:mongoose.Types.ObjectId(), name: 'Schmick'});
 
 
-            sweet.save(function(){
-                sweet.on('autoref', function(err, sweet) {
-                    schmick.save(function () {
-                        schmick.on('autoref', function(err, schmick) {
-                            done(db);
-                        });
-                    });
+            sweet.save(function(err, sweet){
+                schmick.save(function (err, schmick) {
+                    done(db);
                 });
             })
         }

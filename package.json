@@ -1,12 +1,12 @@
 {
   "name": "mongoose-autorefs",
-  "version": "1.0.5",
+  "version": "2.0.0",
   "description": "Mongoose plugin for automatic updating of referenced documents",
   "repository": "https://github.com/strewhella/mongoose-autorefs.git",
   "bugs": "https://github.com/strewhella/mongoose-autorefs/issues",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -R spec ./test/test.js"
+    "test": "mocha --exit -R spec ./test/test.js"
   },
   "keywords": [
     "mongoose",
@@ -22,7 +22,7 @@
   "author": "Simon Trewhella",
   "license": "MIT",
   "dependencies": {
-    "mongoose": "^3.8.20",
+    "mongoose": "^4.6.0",
     "mongoose-populator": "^1.0.2"
   },
   "devDependencies": {
