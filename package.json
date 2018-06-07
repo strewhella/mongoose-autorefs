@@ -6,7 +6,7 @@
   "bugs": "https://github.com/strewhella/mongoose-autorefs/issues",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -R spec ./test/test.js"
+    "test": "mocha --exit -R spec ./test/test.js"
   },
   "keywords": [
     "mongoose",
