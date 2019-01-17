@@ -134,7 +134,7 @@ module.exports = function (schema, options){
                         update[operation] = {};
                         update[operation][dest] = refId;
 
-                        doc.constructor.update({ _id: doc._id }, update, function(err){
+                        doc.constructor.updateOne({ _id: doc._id }, update, function(err){
                             if (err){
                                 return finish(new Error('Error saving autoref: ' + err.message + ' (doc ' + doc._id + ')' + update), originalDoc);
                             }
